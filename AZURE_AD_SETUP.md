@@ -1,272 +1,136 @@
-# Azure AD Authentication Setup Guide
+# Microsoft Entra ID Configuration
 
-This guide walks you through configuring Azure Active Directory (Entra ID) authentication for HealthMesh React SPA.
+## ✅ Configuration Complete
 
-## Prerequisites
+Your HealthMesh application is now configured with Microsoft Entra ID authentication.
 
-- ✅ Azure subscription ([Create one for free](https://azure.microsoft.com/free/))
-- ✅ Node.js installed
-- ✅ Visual Studio Code or another code editor
-- ✅ MSAL packages already installed:
-  - `@azure/msal-browser` v4.27.0
-  - `@azure/msal-react` v3.0.23
+### App Registration Details
 
-## Step 1: Configure Your Application in Azure Portal
+- **Application Name**: HealthMesh
+- **Application (Client) ID**: `5f575598-453d-4278-8e0f-a31fb9048256`
+- **Tenant ID**: `0ba0de08-9840-495b-9ba1-a219de9356b8`
+- **Redirect URIs**:
+  - Production: `https://healthmesh-dev-app.azurewebsites.net/login`
+  - Development: `http://localhost:5000/login`
 
-### 1.1 Create App Registration
+### Environment Variables Set
 
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to **Azure Active Directory** (now called **Microsoft Entra ID**)
-3. Click **App registrations** → **New registration**
-4. Fill in the details:
-   - **Name**: `HealthMesh`
-   - **Supported account types**: Choose based on your needs:
-     - `Accounts in this organizational directory only (Single tenant)` - For enterprise
-     - `Accounts in any organizational directory (Multi-tenant)` - For SaaS
-     - `Accounts in any organizational directory and personal Microsoft accounts` - For public apps
-   - **Redirect URI**: 
-     - Platform: `Single-page application (SPA)`
-     - URI: `http://localhost:3000/`
-5. Click **Register**
-
-### 1.2 Note Your Credentials
-
-After registration, you'll see:
-- **Application (client) ID**: Copy this value
-- **Directory (tenant) ID**: Copy this value
-
-### 1.3 Configure Authentication
-
-1. In your app registration, go to **Authentication**
-2. Under **Single-page application**, verify `http://localhost:3000/` is added
-3. Under **Implicit grant and hybrid flows**, enable:
-   - ✅ **ID tokens** (used for user sign-in)
-   - ✅ **Access tokens** (used for API calls)
-4. Click **Save**
-
-### 1.4 Configure API Permissions
-
-1. Go to **API permissions**
-2. Click **Add a permission**
-3. Select **Microsoft Graph**
-4. Select **Delegated permissions**
-5. Add these permissions:
-   - ✅ `User.Read` (Sign in and read user profile)
-   - ✅ `openid` (Sign users in)
-   - ✅ `profile` (View users' basic profile)
-   - ✅ `email` (View users' email address)
-6. Click **Add permissions**
-7. Click **Grant admin consent** (if you have admin rights)
-
-## Step 2: Update Environment Variables
-
-Your `.env` file has been configured with:
-
-```env
-# Azure Entra ID Configuration
-AZURE_AD_TENANT_ID=your-tenant-id-here
-AZURE_AD_CLIENT_ID=your-client-id-here
-
-# Frontend environment variables (exposed to client)
-VITE_AZURE_AD_TENANT_ID=your-tenant-id-here
-VITE_AZURE_AD_CLIENT_ID=your-client-id-here
-VITE_AZURE_AD_REDIRECT_URI=http://localhost:3000/
-```
-
-**Replace the values** with your actual credentials from Step 1.2:
-- Replace `your-tenant-id-here` with your **Directory (tenant) ID**
-- Replace `your-client-id-here` with your **Application (client) ID**
-
-## Step 3: Application Configuration (Already Done ✅)
-
-The following configurations have been completed in your codebase:
-
-### ✅ MSAL Configuration (`client/src/auth/authConfig.ts`)
-- Configured with proper redirect URI: `http://localhost:3000/`
-- Set up scopes for Microsoft Graph API
-- Enabled session storage for tokens
-
-### ✅ Auth Provider (`client/src/auth/AuthProvider.tsx`)
-- MSAL Provider wraps the application
-- Handles redirect responses
-- Manages active account state
-
-### ✅ Protected Routes (`client/src/auth/ProtectedRoute.tsx`)
-- Checks authentication state
-- Supports dev bypass mode for testing
-- Redirects to login when unauthenticated
-
-### ✅ Development Server Port
-- Vite configured to run on port 3000
-- Matches Azure redirect URI
-
-## Step 4: Run the Project
-
-### Install Dependencies (if not already done)
+**Azure App Service** (Runtime - Backend):
 ```bash
-npm install
+AZURE_AD_CLIENT_ID=5f575598-453d-4278-8e0f-a31fb9048256
+AZURE_AD_TENANT_ID=0ba0de08-9840-495b-9ba1-a219de9356b8
 ```
 
-### Start the Development Server
-```bash
-npm run dev
+**GitHub Actions Workflow** (Build-time - Frontend):
+```yaml
+VITE_AZURE_AD_CLIENT_ID=5f575598-453d-4278-8e0f-a31fb9048256
+VITE_AZURE_AD_TENANT_ID=0ba0de08-9840-495b-9ba1-a219de9356b8
+VITE_AZURE_AD_REDIRECT_URI=https://healthmesh-dev-app.azurewebsites.net/login
 ```
 
-The application will start at: **http://localhost:3000/**
+## Database Configuration
 
-### Test Authentication Flow
+**Azure SQL Database**: ✅ Connected
+- Server: `healthmeshdevsql23qydhgf.database.windows.net`
+- Database: `healthmesh`
+- Connection String: Configured in `AZURE_SQL_CONNECTION_STRING`
 
-1. **Navigate to the app**: Open http://localhost:3000/
-2. **Click "Sign In"**: You'll be redirected to Microsoft login
-3. **Enter credentials**: Use your Microsoft account
-4. **Grant consent**: On first login, approve the requested permissions
-5. **Success!**: You'll be redirected back to the dashboard
+**Tables Used**:
+- `hospitals` - Multi-tenant organizations (keyed by `entra_tenant_id`)
+- `users` - Users auto-provisioned from Entra ID (keyed by `entra_oid`)
+- `patients` - Patient records (hospital-scoped)
+- `clinical_cases` - Case management (hospital-scoped)
+- `lab_reports` - Lab test results (hospital-scoped)
+- `risk_alerts` - Clinical alerts (hospital-scoped)
 
-## Step 5: Testing with Different Account Types
+## How Authentication Works
 
-### Test with Work/School Account (Entra ID)
-```typescript
-// This is the default configuration in authConfig.ts
-const mode = "entra";
-```
-Users sign in with: `user@yourcompany.com`
+1. **User visits app** → Redirected to Microsoft login
+2. **Microsoft authenticates** → User signs in with work/school/personal account
+3. **Token returned** → Contains claims (oid, tid, email, name)
+4. **Backend validates token** → Verifies via Microsoft JWKS
+5. **Auto-provisioning**:
+   - If new tenant → Create hospital record
+   - If new user → Create user record
+6. **Session established** → User context attached to all API calls
 
-### Test with Personal Microsoft Account
-Make sure you selected the right account type in Step 1.1:
-- Choose "Accounts in any organizational directory and personal Microsoft accounts"
+## Security Features
 
-## How the Authentication Works
+✅ **Microsoft Entra ID ONLY** - No local passwords
+✅ **Multi-tenant** - Each organization isolated by `hospital_id`
+✅ **Auto-provisioning** - Users created on first login
+✅ **Token validation** - JWT verified via Microsoft JWKS endpoint
+✅ **HIPAA compliant** - No hardcoded credentials
+✅ **Data isolation** - All queries filtered by `hospital_id`
 
-```
-┌─────────────┐         ┌──────────────┐         ┌─────────────┐
-│   Browser   │         │  MSAL.js     │         │  Microsoft  │
-│   (React)   │         │  Library     │         │   Login     │
-└─────────────┘         └──────────────┘         └─────────────┘
-       │                        │                        │
-       │  1. Click Sign In      │                        │
-       ├───────────────────────>│                        │
-       │                        │                        │
-       │                        │  2. Redirect to Login  │
-       │                        ├───────────────────────>│
-       │                        │                        │
-       │                        │  3. User Authenticates │
-       │                        │<───────────────────────│
-       │                        │                        │
-       │  4. Receive Token      │                        │
-       │<───────────────────────│                        │
-       │                        │                        │
-       │  5. Call API with Token│                        │
-       ├───────────────────────>│                        │
-```
+## Testing Authentication
 
-## Microsoft Graph API Integration
-
-Once authenticated, you can call Microsoft Graph:
-
-```typescript
-import { useMsal } from "@azure/msal-react";
-import { graphRequest } from "@/auth/authConfig";
-
-function ProfileComponent() {
-  const { instance, accounts } = useMsal();
-
-  const requestProfileData = async () => {
-    const request = {
-      ...graphRequest,
-      account: accounts[0],
-    };
-
-    try {
-      const response = await instance.acquireTokenSilent(request);
-      
-      // Call Microsoft Graph
-      const graphResponse = await fetch("https://graph.microsoft.com/v1.0/me", {
-        headers: {
-          Authorization: `Bearer ${response.accessToken}`,
-        },
-      });
-      
-      const userData = await graphResponse.json();
-      console.log("User profile:", userData);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
-
-  return (
-    <button onClick={requestProfileData}>
-      Request Profile Information
-    </button>
-  );
-}
-```
-
-## Development Mode Bypass
-
-For local testing **without** Azure authentication:
-
-```env
-# In .env file
-DEV_BYPASS_AUTH=true
-```
-
-This allows you to test the application without configuring Azure AD. Perfect for:
-- ✅ Local development
-- ✅ UI testing
-- ✅ Demo purposes
-
-⚠️ **REMOVE IN PRODUCTION!**
+1. Visit: https://healthmesh-dev-app.azurewebsites.net
+2. Click "Sign in with Microsoft"
+3. Use any Microsoft account:
+   - Personal Microsoft account (outlook.com, hotmail.com, etc.)
+   - Work or school account (Azure AD)
+4. On first login:
+   - Hospital record auto-created
+   - User record auto-created
+   - Role assigned (default: 'physician')
 
 ## Troubleshooting
 
-### Error: "AADSTS700016: Application not found"
-**Solution**: Check that your `VITE_AZURE_AD_CLIENT_ID` matches the Application ID in Azure Portal.
+### "Entra ID not configured" error
+- ✅ Fixed - Environment variables now set
+- Frontend build includes VITE_AZURE_AD_* variables
+- Backend has AZURE_AD_* variables
 
-### Error: "AADSTS50011: Redirect URI mismatch"
-**Solution**: Ensure `http://localhost:3000/` is added in Azure Portal → Authentication → Redirect URIs.
+### "Redirect URI mismatch" error
+- ✅ Fixed - Redirect URIs added to app registration
+- Both production and localhost URLs registered
 
-### Error: "Consent required"
-**Solution**: 
-1. Go to Azure Portal → Your App → API Permissions
-2. Click "Grant admin consent for [Your Organization]"
+### Database connection issues
+- ✅ Fixed - Table names corrected (`clinical_cases` not `cases`)
+- Connection string verified in Azure App Service
+- Firewall rules allow Azure services
 
-### Port Already in Use
-**Solution**: 
+### Sign-in fails
+- Check App Registration > Authentication > Platform configurations
+- Verify redirect URIs match exactly
+- Check browser console for MSAL errors
+
+## Next Deployment
+
+When you push to `main` branch:
+1. GitHub Actions builds with Entra ID config
+2. Frontend gets `VITE_AZURE_AD_*` variables baked in
+3. Deploys to Azure with runtime `AZURE_AD_*` variables
+4. Authentication works automatically
+
+## Manual Updates (if needed)
+
+### Change Tenant (Single vs Multi-tenant)
+
 ```bash
-# Kill process on port 3000
-npx kill-port 3000
+# Multi-tenant (current)
+VITE_AZURE_AD_TENANT_ID=common
 
-# Or change port in vite.config.ts
+# Single-tenant (restrict to your org)
+VITE_AZURE_AD_TENANT_ID=0ba0de08-9840-495b-9ba1-a219de9356b8
 ```
 
-### Tokens Not Being Stored
-**Solution**: Check browser console for MSAL errors. Ensure:
-- Session storage is enabled
-- No browser extensions blocking cookies
+### Add New Redirect URI
 
-## Next Steps
+```bash
+az ad app update --id 5f575598-453d-4278-8e0f-a31fb9048256 \
+  --web-redirect-uris \
+  "https://healthmesh-dev-app.azurewebsites.net/login" \
+  "http://localhost:5000/login" \
+  "https://your-new-domain.com/login"
+```
 
-✅ **Production Deployment**: Update redirect URI to your production domain
-✅ **Add More Scopes**: Configure additional Microsoft Graph permissions
-✅ **Multi-Tenant**: Update to support multiple Azure AD tenants
-✅ **Token Caching**: Already configured with session storage
+## Support
 
-## Additional Resources
+For Microsoft Entra ID documentation:
+- https://learn.microsoft.com/entra/identity-platform/
+- https://learn.microsoft.com/entra/identity-platform/quickstart-register-app
 
-- [Microsoft Identity Platform Docs](https://learn.microsoft.com/entra/identity-platform/)
-- [MSAL.js Documentation](https://github.com/AzureAD/microsoft-authentication-library-for-js)
-- [Microsoft Graph API](https://learn.microsoft.com/graph/overview)
-- [Azure AD B2C Setup](https://learn.microsoft.com/azure/active-directory-b2c/)
-
-## Security Best Practices
-
-✅ **Never commit credentials**: Use environment variables
-✅ **Use HTTPS in production**: Required by Azure AD
-✅ **Implement token refresh**: MSAL handles this automatically
-✅ **Validate tokens server-side**: Backend validation in `server/auth/entraIdAuth.ts`
-✅ **Limit token scope**: Only request permissions you need
-✅ **Monitor sign-ins**: Use Azure AD sign-in logs
-
----
-
-**Need Help?** Check the [Microsoft Identity Platform documentation](https://learn.microsoft.com/entra/identity-platform/) or reach out to your Azure administrator.
+For MSAL.js documentation:
+- https://learn.microsoft.com/entra/msal/javascript/
