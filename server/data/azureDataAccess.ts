@@ -344,27 +344,33 @@ export class AzureAuditService {
         ipAddress?: string;
         userAgent?: string;
     }) {
-        const pool = await getPool();
-        const id = generateUUID();
+        try {
+            const pool = await getPool();
+            const id = generateUUID();
 
-        await pool.request()
-            .input("id", sql.NVarChar, id)
-            .input("hospitalId", sql.NVarChar, hospitalId)
-            .input("userId", sql.NVarChar, userId)
-            .input("entraOid", sql.NVarChar, entraOid)
-            .input("eventType", sql.NVarChar, data.eventType)
-            .input("resourceType", sql.NVarChar, data.resourceType || null)
-            .input("resourceId", sql.NVarChar, data.resourceId || null)
-            .input("action", sql.NVarChar, data.action || null)
-            .input("details", sql.NVarChar, data.details ? JSON.stringify(data.details) : null)
-            .input("ipAddress", sql.NVarChar, data.ipAddress || null)
-            .input("userAgent", sql.NVarChar, data.userAgent || null)
-            .query(`
-                INSERT INTO audit_logs (id, hospital_id, user_id, entra_oid, event_type, resource_type, resource_id, action, details, ip_address, user_agent)
-                VALUES (@id, @hospitalId, @userId, @entraOid, @eventType, @resourceType, @resourceId, @action, @details, @ipAddress, @userAgent)
-            `);
+            await pool.request()
+                .input("id", sql.NVarChar, id)
+                .input("hospitalId", sql.NVarChar, hospitalId)
+                .input("userId", sql.NVarChar, userId)
+                .input("entraOid", sql.NVarChar, entraOid)
+                .input("eventType", sql.NVarChar, data.eventType)
+                .input("resourceType", sql.NVarChar, data.resourceType || null)
+                .input("resourceId", sql.NVarChar, data.resourceId || null)
+                .input("action", sql.NVarChar, data.action || null)
+                .input("details", sql.NVarChar, data.details ? JSON.stringify(data.details) : null)
+                .input("ipAddress", sql.NVarChar, data.ipAddress || null)
+                .input("userAgent", sql.NVarChar, data.userAgent || null)
+                .query(`
+                    INSERT INTO audit_logs (id, hospital_id, user_id, entra_oid, event_type, resource_type, resource_id, action, details, ip_address, user_agent)
+                    VALUES (@id, @hospitalId, @userId, @entraOid, @eventType, @resourceType, @resourceId, @action, @details, @ipAddress, @userAgent)
+                `);
 
-        return { id };
+            return { id };
+        } catch (error) {
+            // Audit logging is optional - don't block operations if it fails
+            console.error('[AUDIT] Failed to create audit log:', error);
+            return { id: null };
+        }
     }
 
     static async getAuditLogs(hospitalId: string, limit: number = 100) {
