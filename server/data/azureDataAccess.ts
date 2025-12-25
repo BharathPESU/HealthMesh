@@ -457,10 +457,10 @@ export class AzureChatService {
             .input("userId", sql.NVarChar, userId)
             .input("role", sql.NVarChar, data.role || "user")
             .input("content", sql.NVarChar, data.content)
-            .input("metadata", sql.NVarChar, data.metadata ? JSON.stringify(data.metadata) : null)
+            .input("context", sql.NVarChar, data.context || data.metadata ? JSON.stringify(data.context || data.metadata) : null)
             .query(`
-                INSERT INTO chat_messages (id, hospital_id, case_id, user_id, role, content, metadata)
-                VALUES (@id, @hospitalId, @caseId, @userId, @role, @content, @metadata)
+                INSERT INTO chat_messages (id, hospital_id, case_id, user_id, role, content, context)
+                VALUES (@id, @hospitalId, @caseId, @userId, @role, @content, @context)
             `);
 
         return { id };
