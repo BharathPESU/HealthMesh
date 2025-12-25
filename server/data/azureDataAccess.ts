@@ -16,7 +16,7 @@ export class AzureHospitalService {
         const pool = await getPool();
         const result = await pool.request()
             .input("tenantId", sql.NVarChar, tenantId)
-            .query("SELECT * FROM hospitals WHERE entra_tenant_id = @tenantId");
+            .query("SELECT * FROM hospitals WHERE tenant_id = @tenantId");
         return result.recordset[0] || null;
     }
 
@@ -29,7 +29,7 @@ export class AzureHospitalService {
             .input("name", sql.NVarChar, data.name)
             .input("domain", sql.NVarChar, data.domain || null)
             .query(`
-                INSERT INTO hospitals (id, entra_tenant_id, name, domain) 
+                INSERT INTO hospitals (id, tenant_id, name, domain) 
                 VALUES (@id, @entraTenantId, @name, @domain)
             `);
         return { id, ...data };
@@ -46,7 +46,7 @@ export class AzureUserService {
         const result = await pool.request()
             .input("entraOid", sql.NVarChar, entraOid)
             .input("tenantId", sql.NVarChar, tenantId)
-            .query("SELECT * FROM users WHERE entra_oid = @entraOid AND tenant_id = @tenantId");
+            .query("SELECT * FROM users WHERE oid = @entraOid AND tenant_id = @tenantId");
         return result.recordset[0] || null;
     }
 
@@ -69,9 +69,10 @@ export class AzureUserService {
             .input("name", sql.NVarChar, data.name || null)
             .input("role", sql.NVarChar, data.role || "doctor")
             .query(`
-                INSERT INTO users (id, hospital_id, entra_oid, tenant_id, email, name, role) 
+                INSERT INTO users (id, hospital_id, oid, tenant_id, email, name, role) 
                 VALUES (@id, @hospitalId, @entraOid, @tenantId, @email, @name, @role)
             `);
+        return { id, ...data };
         return { id, ...data };
     }
 
@@ -221,7 +222,7 @@ export class AzureCaseService {
         const pool = await getPool();
         const result = await pool.request()
             .input("hospitalId", sql.NVarChar, hospitalId)
-            .query("SELECT * FROM clinical_cases WHERE hospital_id = @hospitalId ORDER BY created_at DESC");
+            .query("SELECT * FROM cases WHERE hospital_id = @hospitalId ORDER BY created_at DESC");
         return result.recordset.map(this.mapCase);
     }
 
@@ -230,7 +231,7 @@ export class AzureCaseService {
         const result = await pool.request()
             .input("hospitalId", sql.NVarChar, hospitalId)
             .input("caseId", sql.NVarChar, caseId)
-            .query("SELECT * FROM clinical_cases WHERE id = @caseId AND hospital_id = @hospitalId");
+            .query("SELECT * FROM cases WHERE id = @caseId AND hospital_id = @hospitalId");
         return result.recordset[0] ? this.mapCase(result.recordset[0]) : null;
     }
 
@@ -239,7 +240,7 @@ export class AzureCaseService {
         const result = await pool.request()
             .input("hospitalId", sql.NVarChar, hospitalId)
             .input("patientId", sql.NVarChar, patientId)
-            .query("SELECT * FROM clinical_cases WHERE patient_id = @patientId AND hospital_id = @hospitalId ORDER BY created_at DESC");
+            .query("SELECT * FROM cases WHERE patient_id = @patientId AND hospital_id = @hospitalId ORDER BY created_at DESC");
         return result.recordset.map(this.mapCase);
     }
 
@@ -258,7 +259,7 @@ export class AzureCaseService {
             .input("priority", sql.NVarChar, data.priority || "medium")
             .input("createdByUserId", sql.NVarChar, userId)
             .query(`
-                INSERT INTO clinical_cases (id, hospital_id, patient_id, case_type, title, description, status, priority, created_by_user_id)
+                INSERT INTO cases (id, hospital_id, patient_id, case_type, title, description, status, priority, created_by_user_id)
                 VALUES (@id, @hospitalId, @patientId, @caseType, @title, @description, @status, @priority, @createdByUserId)
             `);
 
@@ -274,7 +275,7 @@ export class AzureCaseService {
             .input("priority", sql.NVarChar, data.priority || null)
             .input("aiAnalysis", sql.NVarChar, data.aiAnalysis || null)
             .query(`
-                UPDATE clinical_cases SET 
+                UPDATE cases SET 
                     status = COALESCE(@status, status),
                     priority = COALESCE(@priority, priority),
                     ai_analysis = COALESCE(@aiAnalysis, ai_analysis),
