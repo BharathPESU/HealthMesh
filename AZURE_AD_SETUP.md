@@ -134,3 +134,49 @@ For Microsoft Entra ID documentation:
 
 For MSAL.js documentation:
 - https://learn.microsoft.com/entra/msal/javascript/
+
+---
+
+## ✅ Authentication Errors Fixed (Dec 26, 2025)
+
+### Error 1: "Cross-origin token redemption" (AADSTS9002326)
+**Cause**: App was configured as Web application instead of SPA  
+**Fix**: ✅ Converted to Single-Page Application platform
+- Moved redirect URIs from Web to SPA configuration
+- Disabled implicit grant flow (not needed for SPA)
+
+### Error 2: "User account does not exist in tenant"
+**Cause**: App was single-tenant, restricted to one Azure AD organization  
+**Fix**: ✅ Enabled multi-tenant + personal accounts
+- Changed `signInAudience` to `AzureADandPersonalMicrosoftAccount`
+- Set tenant to `common` (supports all Microsoft accounts)
+- Enabled access token version 2
+
+### Current Configuration
+
+**App Registration**:
+- Platform: ✅ Single-Page Application (SPA)
+- Sign-in audience: ✅ Multi-tenant + Personal Microsoft accounts
+- Access token version: ✅ 2
+- Redirect URIs (SPA):
+  - `https://healthmesh-dev-app.azurewebsites.net/login`
+  - `http://localhost:5000/login`
+
+**Supported Accounts**:
+- ✅ Personal Microsoft accounts (@outlook.com, @hotmail.com, @live.com)
+- ✅ Work accounts (any Azure AD organization)
+- ✅ School accounts (any Azure AD organization)
+- ✅ Multi-tenant isolation (each org gets separate hospital record)
+
+### Test Authentication
+
+1. Clear browser cache/cookies
+2. Visit: https://healthmesh-dev-app.azurewebsites.net
+3. Click "Sign in with Microsoft"
+4. Try with ANY Microsoft account:
+   - Personal: yourname@outlook.com
+   - Work: yourname@yourcompany.com
+   - School: yourname@university.edu
+
+Should work now! 🎉
+
