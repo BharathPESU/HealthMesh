@@ -1,0 +1,21 @@
+#!/bin/bash
+# Quick script to create missing tables in Azure SQL Database
+
+echo "Creating missing tables in Azure SQL Database..."
+echo ""
+echo "Option 1: Azure Portal (Recommended)"
+echo "====================================="
+echo "1. Go to: https://portal.azure.com"
+echo "2. Navigate to: SQL databases → healthmesh"
+echo "3. Click 'Query editor' in the left menu"
+echo "4. Login with:"
+echo "   - Server admin login: healthmeshadmin"
+echo "   - Password: HealthMesh@2025!"
+echo "5. Copy and paste the SQL from: create-missing-tables.sql"
+echo "6. Click 'Run' button"
+echo ""
+echo "Option 2: Using sqlcmd (if installed)"
+echo "====================================="
+echo "sqlcmd -S healthmeshdevsql23qydhgf.database.windows.net -d healthmesh -U healthmeshadmin -P 'HealthMesh@2025!' -i create-missing-tables.sql"
+echo ""
+echo "After running the SQL, your AI chat will work!"
