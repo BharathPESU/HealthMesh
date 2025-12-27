@@ -81,7 +81,9 @@ export const msalConfig: Configuration = {
     // MSAL uses this for its internal token cache
     // Actual access tokens are kept in memory by MSAL
     cacheLocation: "sessionStorage",
-    storeAuthStateInCookie: false,
+    // Enable cookie storage for auth state to handle redirects properly
+    // This helps with cross-site cookies and Safari issues
+    storeAuthStateInCookie: true,
   },
   system: {
     loggerOptions: {

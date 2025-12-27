@@ -37,19 +37,57 @@ import {
 import { AuthLayout } from "@/layouts/AuthLayout";
 
 export default function Login() {
-  const { instance, inProgress } = useMsal();
+  const { instance, inProgress, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Debug logging
+  useEffect(() => {
+    console.log("[Login] Auth state - isAuthenticated:", isAuthenticated, "inProgress:", inProgress, "accounts:", accounts.length);
+    console.log("[Login] Current URL:", window.location.href);
+    console.log("[Login] URL has hash:", window.location.hash.length > 1);
+    console.log("[Login] URL has code param:", window.location.search.includes("code="));
+  }, [isAuthenticated, inProgress, accounts]);
+
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated && inProgress === "none") {
       console.log("[Login] User authenticated - redirecting to dashboard");
+      console.log("[Login] Active account:", instance.getActiveAccount()?.username);
       setLocation("/");
     }
-  }, [isAuthenticated, inProgress, setLocation]);
+  }, [isAuthenticated, inProgress, setLocation, instance]);
+
+  // Show loading while MSAL is handling redirect
+  // inProgress can be: "none", "handleRedirect", "login", "logout", etc.
+  if (inProgress !== "none" && inProgress !== "login") {
+    console.log("[Login] MSAL operation in progress:", inProgress);
+    return (
+      <AuthLayout>
+        <div className="w-full max-w-md">
+          <div className="text-center space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-[#0078D4]/20 rounded-full blur-xl animate-pulse" />
+              <div className="relative bg-white dark:bg-slate-900 p-4 rounded-full shadow-lg mx-auto w-fit">
+                <Shield className="h-12 w-12 text-[#0078D4]" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Loader2 className="h-6 w-6 animate-spin text-[#0078D4] mx-auto" />
+              <p className="text-slate-600 dark:text-slate-400 font-medium">
+                Completing sign-in...
+              </p>
+              <p className="text-xs text-slate-500">
+                Processing Microsoft authentication
+              </p>
+            </div>
+          </div>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   // Handle Microsoft login via redirect
   const handleMicrosoftLogin = async () => {
