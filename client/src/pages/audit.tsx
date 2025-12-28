@@ -166,12 +166,15 @@ export default function AuditLogs() {
 
   const { data: logs = [], isLoading } = useQuery<BackendAuditLog[]>({
     queryKey: ["/api/audit-logs"],
-    queryFn: async (): Promise<BackendAuditLog[]> => {
-      const response = await fetch("/api/audit-logs", { credentials: "include" });
-      const data: { success: boolean; data: BackendAuditLog[] } = await response.json();
-      return Array.isArray(data.data) ? data.data : [];
-    },
+    // Remove custom queryFn so React Query uses the default one with auth headers
     refetchInterval: 15000, // Refresh every 15 seconds for real-time
+    select: (data: any) => {
+      // Handle the API response format 
+      if (data?.data && Array.isArray(data.data)) {
+        return data.data;
+      }
+      return Array.isArray(data) ? data : [];
+    }
   });
 
   const logsList = Array.isArray(logs) ? logs : [];
