@@ -2,7 +2,7 @@
   <img src="https://img.shields.io/badge/Microsoft%20Azure-Healthcare-0078D4?style=for-the-badge&logo=microsoft-azure&logoColor=white" alt="Azure Healthcare" />
   <img src="https://img.shields.io/badge/FHIR%20R4-Compliant-success?style=for-the-badge" alt="FHIR R4" />
   <img src="https://img.shields.io/badge/HIPAA-Ready-blue?style=for-the-badge" alt="HIPAA Ready" />
-  <img src="https://img.shields.io/badge/Microsoft%20Imagine%20Cup-2025-purple?style=for-the-badge" alt="Imagine Cup 2025" />
+  <img src="https://img.shields.io/badge/Microsoft%20Imagine%20Cup-2026-purple?style=for-the-badge" alt="Imagine Cup 2026" />
 </p>
 
 <h1 align="center">🏥 HealthMesh</h1>
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <em>Built for Microsoft Imagine Cup 2025 | Healthcare Category</em>
+  <em>Built for Microsoft Imagine Cup 2026 | Healthcare Category</em>
 </p>
 
 ---
@@ -548,16 +548,11 @@ HealthMesh is proudly built for **Microsoft Imagine Cup 2025** in the **Healthca
 **Balaraj R**  
 *Developer & Owner*
 
-- 📧 Email: [balarajr74@gmail.com](mailto:balarajr74@gmail.com)
-- 💼 LinkedIn: [linkedin.com/in/balaraj-r](https://linkedin.com/in/balaraj-r)
+- 📧 Email: [balarajr483@gmail.com](mailto:balarajr483@gmail.com)
+- 💼 LinkedIn: [linkedin.com/in/balaraj-r-209a67330](https://www.linkedin.com/in/balaraj-r-209a67330)
 - 🐙 GitHub: [github.com/balaraj74](https://github.com/balaraj74)
 
 ---
-
-## 📜 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
 ---
 
 ## 🙏 Acknowledgments
